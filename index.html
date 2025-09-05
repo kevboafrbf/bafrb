@@ -233,6 +233,9 @@
             background: rgba(255, 204, 0, 0.1);
             border: 1px solid #ffcc00;
             display: block;
+            font-size: 0.95em;
+            line-height: 1.6;
+            padding: 12px 15px;
         }
 
         .error {
@@ -384,6 +387,11 @@
                 padding: 14px;
                 font-size: 1.1em;
             }
+            
+            .success {
+                font-size: 0.9em;
+                padding: 10px 12px;
+            }
         }
 
         @media (max-width: 360px) {
@@ -467,7 +475,7 @@
                 localStorage.setItem('deviceId', deviceId);
             }
             return deviceId;
-        }
+        } 
 
         // Vérifier le statut de connexion existant
         function checkLoginStatus() {
@@ -560,12 +568,11 @@
             const data = {
                 userId: userId,
                 password: password,
-                rememberMe: rememberMe,
                 deviceId: deviceId
             };
 
             try {
-                const response = await fetch('https://script.google.com/macros/s/AKfycby-dLSs6ee5KZkWEQDS5CUwfVKfz6Ry8hDGKBVYDckAXDAWkdECN8ZQw3aoP8tE5v-X/exec', {
+                const response = await fetch('https://script.google.com/macros/s/AKfycbzvkm3iqFIzOBpy8yBsJmlJmI8w9u-7Ne0grlUcU8EqQPK4PV8gfGy0pFsiEYUUKf0m/exec', {
                     method: 'POST',
                     body: JSON.stringify(data)
                 });
@@ -575,17 +582,27 @@
                 showLoader(false);
                 
                 if (result.success) {
-                    showMessage(`Connexion réussie! ${result.devices ? 'Appareils: ' + result.devices : ''}`, 'success');
+                    // Message avec la date d'expiration
+                    let successMessage = "Connexion réussie!";
+                    if (result.expirationDate) {
+                        successMessage += ` Votre abonnement expire le: ${result.expirationDate}`;
+                    }
+                    if (result.devices) {
+                        successMessage += ` | Appareils: ${result.devices}`;
+                    }
+                    
+                    showMessage(successMessage, 'success');
 
                     if (rememberMe) {
                         const now = new Date();
-                        const expiryTime = now.getTime() + (00 * 00 * 00 * 1000); 
+                        const expiryTime = now.getTime() + (1000); // 30 jours
                         localStorage.setItem('userId', userId);
                         localStorage.setItem('password', password);
                         localStorage.setItem('loginExpiry', expiryTime);
                     }
 
-                    setTimeout(redirectToApp, 2000);
+                    
+                    setTimeout(redirectToApp, 5000); // Augmenté à 5s pour laisser le temps de voir la date
                 } else {
                     showMessage(result.message || "Identifiant ou mot de passe incorrect", 'error');
                 }
